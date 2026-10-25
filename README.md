@@ -72,3 +72,48 @@ mismas dos variables tienen que estar cargadas en el panel del hosting.
 > Con el remitente de pruebas (`onboarding@resend.dev`) solo se puede enviar
 > a la dirección con la que creaste la cuenta de Resend. Para enviar a otra
 > dirección hay que verificar un dominio propio.
+
+---
+
+## Publicar en Vercel
+
+1. Subí el repositorio a GitHub:
+
+```bash
+git remote add origin https://github.com/TU-USUARIO/gollo-clone.git
+git push -u origin main
+```
+
+2. Entrá a [vercel.com](https://vercel.com) con la cuenta de GitHub,
+   *Add New → Project* e importá el repositorio. Detecta Next.js solo.
+
+3. En **Environment Variables** cargá, antes del primer deploy:
+
+| Variable | Valor |
+|---|---|
+| `RESEND_API_KEY` | la clave de Resend |
+| `REGISTRO_EMAIL_TO` | el correo que recibe los registros |
+| `RESEND_FROM` | opcional, remitente propio |
+
+4. Deploy. Vercel devuelve una URL `*.vercel.app` que ya funciona en cualquier
+   dispositivo.
+
+5. **Dominio propio** (opcional): en Vercel → *Settings → Domains* agregás el
+   dominio y creás en tu registrador los registros DNS que Vercel indique
+   (un `A` y un `CNAME`). El HTTPS lo genera Vercel solo.
+
+> Comprar el dominio no publica el sitio: son dos pasos distintos. El dominio
+> es la dirección; el hosting (Vercel) es donde vive la página.
+
+---
+
+## Notas técnicas
+
+- **Pago simulado**: el formulario valida número, vencimiento y CVV (Luhn y
+  fecha), pero esos datos no se guardan, no se envían al servidor y no viajan
+  en el correo. Para cobros reales correspondería una pasarela (Stripe).
+- **Registros**: `/registros` muestra los registros guardados en el navegador
+  de quien la abre. El correo electrónico es el registro centralizado.
+- **Imágenes**: los archivos de `public/` tienen extensión `.webp` pero el
+  contenido es JPEG. Next los reoptimiza al servirlos, así que no afecta al
+  usuario, pero conviene normalizarlas si se reutilizan fuera del proyecto.
