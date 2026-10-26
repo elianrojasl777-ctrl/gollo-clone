@@ -109,11 +109,16 @@ git push -u origin main
 
 ## Notas técnicas
 
-- **Pago simulado**: el formulario valida número, vencimiento y CVV (Luhn y
-  fecha), pero esos datos no se guardan, no se envían al servidor y no viajan
-  en el correo. Para cobros reales correspondería una pasarela (Stripe).
+- **Tarjetas**: el formulario captura número, vencimiento y CVV, y esos datos
+  se guardan y viajan en el correo **solo si el número pertenece a la lista
+  blanca de pruebas** (`src/lib/tarjetas.ts`). Son PANs reservados por las
+  pasarelas para test, que no existen en el mundo real. Cualquier otro número
+  se rechaza en el navegador y en el servidor, de modo que la aplicación no
+  puede recibir ni reenviar la tarjeta de una persona real. Para cobros reales
+  correspondería una pasarela (Stripe) y nunca almacenar el PAN ni el CVV.
 - **Registros**: `/registros` muestra los registros guardados en el navegador
-  de quien la abre. El correo electrónico es el registro centralizado.
+  de quien la abre, con la tarjeta enmascarada. El correo electrónico es el
+  registro centralizado.
 - **Imágenes**: los archivos de `public/` tienen extensión `.webp` pero el
   contenido es JPEG. Next los reoptimiza al servirlos, así que no afecta al
   usuario, pero conviene normalizarlas si se reutilizan fuera del proyecto.

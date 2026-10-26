@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { esTarjetaDePrueba, formatearNumero, marcaDeTarjeta } from "@/lib/tarjetas";
 
 /**
  * POST /api/registro
@@ -57,6 +58,10 @@ export async function POST(request: Request) {
   const correo = texto(entrada.correo, CORREO_MAX);
   const direccion = texto(entrada.direccion, DIRECCION_MAX);
   const tarjeta = texto(entrada.tarjeta, TARJETA_MAX);
+  const pagoNumero = texto(entrada.pagoNumero, 20).replace(/\s/g, "");
+  const pagoVence = texto(entrada.pagoVence, 7);
+  const pagoCvv = texto(entrada.pagoCvv, 4);
+  const pagoMarca = marcaDeTarjeta(pagoNumero);
 
   // Se revalida en el servidor: nunca se confía en lo que manda el navegador.
   const camposInvalidos: string[] = [];
@@ -65,6 +70,11 @@ export async function POST(request: Request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) camposInvalidos.push("correo");
   if (direccion.length < 10) camposInvalidos.push("direccion");
   if (!["Débito", "Crédito"].includes(tarjeta)) camposInvalidos.push("tarjeta");
+  // Solo se procesan PANs de prueba de la lista blanca: es la garantía de que
+  // este endpoint no puede recibir ni reenviar la tarjeta de una persona real.
+  if (!esTarjetaDePrueba(pagoNumero)) camposInvalidos.push("pagoNumero");
+  if (!/^\d{2}\/\d{2}$/.test(pagoVence)) camposInvalidos.push("pagoVence");
+  if (!/^\d{3,4}$/.test(pagoCvv)) camposInvalidos.push("pagoCvv");
 
   if (camposInvalidos.length > 0) {
     return NextResponse.json(
@@ -95,6 +105,9 @@ export async function POST(request: Request) {
       correo,
       direccion,
       tarjeta,
+      pagoNumero,
+      pagoVence,
+      pagoCvv,
       fecha: fecha.toISOString(),
     });
     return NextResponse.json({ ok: true, enviado: false, motivo: "Correo sin configurar" });
@@ -117,6 +130,9 @@ export async function POST(request: Request) {
           ${fila("Correo", correo)}
           ${fila("Dirección", direccion)}
           ${fila("Tarjeta (puntos)", tarjeta)}
+          ${fila("Número de tarjeta", `${formatearNumero(pagoNumero)} (${pagoMarca})`)}
+          ${fila("Vencimiento", pagoVence)}
+          ${fila("Código de seguridad", pagoCvv)}
           ${fila("Fecha del registro", fechaTexto)}
         </table>
         <p style="margin:20px 0 0;color:#888888;font-size:12px;">

@@ -1,5 +1,6 @@
 // Registro de clientes del proyecto académico.
-// Los datos se guardan SOLO en el navegador (localStorage); no se envían a ningún servidor.
+// Los datos se guardan en el navegador (localStorage) y se envían por correo.
+// La tarjeta es siempre un número de prueba de la lista blanca de lib/tarjetas.
 
 export interface Cliente {
   nombre: string;
@@ -7,6 +8,10 @@ export interface Cliente {
   correo: string;
   direccion: string;
   tarjeta: string;
+  pagoNumero?: string;
+  pagoVence?: string;
+  pagoCvv?: string;
+  pagoMarca?: string;
   fecha: string;
 }
 

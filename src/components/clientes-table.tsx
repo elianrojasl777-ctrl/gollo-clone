@@ -3,6 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { Trash2, Users } from "lucide-react";
 import { clearClientes, getClientesSnapshot, parseClientes, subscribeClientes } from "@/lib/clientes";
+import { enmascarar, marcaDeTarjeta } from "@/lib/tarjetas";
 
 const dateFormat = new Intl.DateTimeFormat("es-CR", { dateStyle: "medium", timeStyle: "short" });
 
@@ -47,6 +48,8 @@ export default function ClientesTable() {
                 <th scope="col" className="px-4 py-3 font-semibold">Correo</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Dirección</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Tarjeta</th>
+                <th scope="col" className="px-4 py-3 font-semibold">N° tarjeta</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Vence</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Fecha</th>
               </tr>
             </thead>
@@ -58,6 +61,10 @@ export default function ClientesTable() {
                   <td className="px-4 py-3">{c.correo}</td>
                   <td className="px-4 py-3 min-w-48">{c.direccion}</td>
                   <td className="px-4 py-3">{c.tarjeta || "—"}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {c.pagoNumero ? `${enmascarar(c.pagoNumero)} · ${marcaDeTarjeta(c.pagoNumero)}` : "—"}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">{c.pagoVence || "—"}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gollo-gray-text">{dateFormat.format(new Date(c.fecha))}</td>
                 </tr>
               ))}

@@ -5,6 +5,13 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { CheckCircle2 } from "lucide-react";
 import { isRegistered, saveCliente } from "@/lib/clientes";
+import {
+  esTarjetaDePrueba,
+  formatearNumero,
+  formatearVencimiento,
+  marcaDeTarjeta,
+  soloDigitos,
+} from "@/lib/tarjetas";
 import Confetti from "./confetti";
 
 // Proyecto académico (demo local): la ventana funciona como un control de registro obligatorio.
@@ -40,49 +47,20 @@ function validate(values: FormValues): FormErrors {
 
 const emptyValues: FormValues = { nombre: "", telefono: "", correo: "", direccion: "", tarjeta: "" };
 
-// --- Paso de pago SIMULADO -------------------------------------------------
-// Los datos de la tarjeta viven solo en este estado de React: no se guardan en
-// localStorage, no se envían a /api/registro y no viajan en el correo.
+// --- Datos de tarjeta -------------------------------------------------------
+// Solo se aceptan los números de prueba de la lista blanca (ver lib/tarjetas).
+// Se guardan y se envían porque son PANs de test reservados: no existen en el
+// mundo real, así que no hay riesgo de filtrar la tarjeta de nadie.
 type Pago = { numero: string; vencimiento: string; cvv: string };
 type ErroresPago = Partial<Record<keyof Pago, string>>;
 
 const pagoVacio: Pago = { numero: "", vencimiento: "", cvv: "" };
 
-function soloDigitos(valor: string, max: number) {
-  return valor.replace(/\D/g, "").slice(0, max);
-}
-
-function formatearNumero(valor: string) {
-  return soloDigitos(valor, 16).replace(/(.{4})/g, "$1 ").trim();
-}
-
-function formatearVencimiento(valor: string) {
-  const digitos = soloDigitos(valor, 4);
-  return digitos.length > 2 ? `${digitos.slice(0, 2)}/${digitos.slice(2)}` : digitos;
-}
-
-// Algoritmo de Luhn: verifica el dígito control de la tarjeta.
-function luhnValido(numero: string) {
-  let suma = 0;
-  let doble = false;
-  for (let i = numero.length - 1; i >= 0; i -= 1) {
-    let digito = Number(numero[i]);
-    if (doble) {
-      digito *= 2;
-      if (digito > 9) digito -= 9;
-    }
-    suma += digito;
-    doble = !doble;
-  }
-  return suma % 10 === 0;
-}
-
 function validarPago(pago: Pago): ErroresPago {
   const errores: ErroresPago = {};
-  const numero = pago.numero.replace(/\s/g, "");
 
-  if (numero.length !== 16 || !luhnValido(numero)) {
-    errores.numero = "Ingresá los 16 dígitos (probá 4111 1111 1111 1111).";
+  if (!esTarjetaDePrueba(pago.numero)) {
+    errores.numero = "Esta demo solo acepta tarjetas de prueba (4111 1111 1111 1111 / 5555 5555 5555 4444).";
   }
 
   const partes = /^(\d{2})\/(\d{2})$/.exec(pago.vencimiento);
@@ -169,6 +147,10 @@ export default function RegistrationModal() {
       correo: values.correo.trim(),
       direccion: values.direccion.trim(),
       tarjeta: values.tarjeta,
+      pagoNumero: pago.numero.replace(/\s/g, ""),
+      pagoVence: pago.vencimiento,
+      pagoCvv: pago.cvv,
+      pagoMarca: marcaDeTarjeta(pago.numero),
     };
 
     saveCliente(registro);
