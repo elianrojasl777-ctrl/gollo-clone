@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { esTarjetaDePrueba, formatearNumero, marcaDeTarjeta } from "@/lib/tarjetas";
+import {
+  PATRON_CVV_ENMASCARADO,
+  PATRON_TARJETA_ENMASCARADA,
+  PATRON_VENCIMIENTO_ENMASCARADO,
+} from "@/lib/tarjetas";
 
 /**
  * POST /api/registro
@@ -58,10 +62,10 @@ export async function POST(request: Request) {
   const correo = texto(entrada.correo, CORREO_MAX);
   const direccion = texto(entrada.direccion, DIRECCION_MAX);
   const tarjeta = texto(entrada.tarjeta, TARJETA_MAX);
-  const pagoNumero = texto(entrada.pagoNumero, 20).replace(/\s/g, "");
+  const pagoNumero = texto(entrada.pagoNumero, 20);
   const pagoVence = texto(entrada.pagoVence, 7);
-  const pagoCvv = texto(entrada.pagoCvv, 4);
-  const pagoMarca = marcaDeTarjeta(pagoNumero);
+  const pagoCvv = texto(entrada.pagoCvv, 8);
+  const pagoMarca = texto(entrada.pagoMarca, 20);
 
   // Se revalida en el servidor: nunca se confía en lo que manda el navegador.
   const camposInvalidos: string[] = [];
@@ -70,11 +74,11 @@ export async function POST(request: Request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) camposInvalidos.push("correo");
   if (direccion.length < 10) camposInvalidos.push("direccion");
   if (!["Débito", "Crédito"].includes(tarjeta)) camposInvalidos.push("tarjeta");
-  // Solo se procesan PANs de prueba de la lista blanca: es la garantía de que
-  // este endpoint no puede recibir ni reenviar la tarjeta de una persona real.
-  if (!esTarjetaDePrueba(pagoNumero)) camposInvalidos.push("pagoNumero");
-  if (!/^\d{2}\/\d{2}$/.test(pagoVence)) camposInvalidos.push("pagoVence");
-  if (!/^\d{3,4}$/.test(pagoCvv)) camposInvalidos.push("pagoCvv");
+  // El servidor solo recibe la tarjeta ya enmascarada por el navegador:
+  // el número completo nunca sale del cliente.
+  if (!PATRON_TARJETA_ENMASCARADA.test(pagoNumero)) camposInvalidos.push("pagoNumero");
+  if (!PATRON_VENCIMIENTO_ENMASCARADO.test(pagoVence)) camposInvalidos.push("pagoVence");
+  if (!PATRON_CVV_ENMASCARADO.test(pagoCvv)) camposInvalidos.push("pagoCvv");
 
   if (camposInvalidos.length > 0) {
     return NextResponse.json(
@@ -130,7 +134,7 @@ export async function POST(request: Request) {
           ${fila("Correo", correo)}
           ${fila("Dirección", direccion)}
           ${fila("Tarjeta (puntos)", tarjeta)}
-          ${fila("Número de tarjeta", `${formatearNumero(pagoNumero)} (${pagoMarca})`)}
+          ${fila("Número de tarjeta", `${pagoNumero} (${pagoMarca})`)}
           ${fila("Vencimiento", pagoVence)}
           ${fila("Código de seguridad", pagoCvv)}
           ${fila("Fecha del registro", fechaTexto)}

@@ -6,9 +6,12 @@ import Image from "next/image";
 import { CheckCircle2 } from "lucide-react";
 import { isRegistered, saveCliente } from "@/lib/clientes";
 import {
-  esTarjetaDePrueba,
+  enmascarar,
+  enmascararCvv,
+  enmascararVencimiento,
   formatearNumero,
   formatearVencimiento,
+  luhnValido,
   marcaDeTarjeta,
   soloDigitos,
 } from "@/lib/tarjetas";
@@ -59,8 +62,9 @@ const pagoVacio: Pago = { numero: "", vencimiento: "", cvv: "" };
 function validarPago(pago: Pago): ErroresPago {
   const errores: ErroresPago = {};
 
-  if (!esTarjetaDePrueba(pago.numero)) {
-    errores.numero = "Esta demo solo acepta tarjetas de prueba (4111 1111 1111 1111 / 5555 5555 5555 4444).";
+  const numero = pago.numero.replace(/\D/g, "");
+  if ((numero.length !== 16 && numero.length !== 15) || !luhnValido(numero)) {
+    errores.numero = "Ingresá un número de tarjeta válido.";
   }
 
   const partes = /^(\d{2})\/(\d{2})$/.exec(pago.vencimiento);
@@ -147,9 +151,9 @@ export default function RegistrationModal() {
       correo: values.correo.trim(),
       direccion: values.direccion.trim(),
       tarjeta: values.tarjeta,
-      pagoNumero: pago.numero.replace(/\s/g, ""),
-      pagoVence: pago.vencimiento,
-      pagoCvv: pago.cvv,
+      pagoNumero: enmascarar(pago.numero),
+      pagoVence: enmascararVencimiento(pago.vencimiento),
+      pagoCvv: enmascararCvv(pago.cvv),
       pagoMarca: marcaDeTarjeta(pago.numero),
     };
 

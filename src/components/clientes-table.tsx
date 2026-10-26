@@ -3,7 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { Trash2, Users } from "lucide-react";
 import { clearClientes, getClientesSnapshot, parseClientes, subscribeClientes } from "@/lib/clientes";
-import { enmascarar, marcaDeTarjeta } from "@/lib/tarjetas";
+
 
 const dateFormat = new Intl.DateTimeFormat("es-CR", { dateStyle: "medium", timeStyle: "short" });
 
@@ -62,7 +62,7 @@ export default function ClientesTable() {
                   <td className="px-4 py-3 min-w-48">{c.direccion}</td>
                   <td className="px-4 py-3">{c.tarjeta || "—"}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    {c.pagoNumero ? `${enmascarar(c.pagoNumero)} · ${marcaDeTarjeta(c.pagoNumero)}` : "—"}
+                    {c.pagoNumero ? `${c.pagoNumero}${c.pagoMarca ? ` · ${c.pagoMarca}` : ""}` : "—"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">{c.pagoVence || "—"}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gollo-gray-text">{dateFormat.format(new Date(c.fecha))}</td>

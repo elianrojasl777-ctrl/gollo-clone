@@ -109,13 +109,11 @@ git push -u origin main
 
 ## Notas técnicas
 
-- **Tarjetas**: el formulario captura número, vencimiento y CVV, y esos datos
-  se guardan y viajan en el correo **solo si el número pertenece a la lista
-  blanca de pruebas** (`src/lib/tarjetas.ts`). Son PANs reservados por las
-  pasarelas para test, que no existen en el mundo real. Cualquier otro número
-  se rechaza en el navegador y en el servidor, de modo que la aplicación no
-  puede recibir ni reenviar la tarjeta de una persona real. Para cobros reales
-  correspondería una pasarela (Stripe) y nunca almacenar el PAN ni el CVV.
+- **Tarjetas**: el formulario valida número (Luhn), vencimiento y CVV, pero el
+  número completo **nunca sale del navegador**. Al servidor y al correo llegan
+  enmascarados: `•••• 1111 (Visa)`, vencimiento `1•/3•` y CVV `1••`. Alcanza
+  para demostrar el flujo de captura sin poner datos usables en un buzón.
+  Para cobros reales correspondería una pasarela (Stripe).
 - **Registros**: `/registros` muestra los registros guardados en el navegador
   de quien la abre, con la tarjeta enmascarada. El correo electrónico es el
   registro centralizado.

@@ -61,3 +61,22 @@ export function marcaDeTarjeta(numero: string): string {
   if (/^6/.test(limpio)) return "Discover";
   return "Tarjeta";
 }
+
+// El vencimiento viaja parcialmente enmascarado: "12/30" -> "1•/3•"
+export function enmascararVencimiento(vencimiento: string): string {
+  const partes = /^(\d{2})\/(\d{2})$/.exec(vencimiento);
+  if (!partes) return "••/••";
+  return `${partes[1].charAt(0)}•/${partes[2].charAt(0)}•`;
+}
+
+// El CVV viaja con un solo dígito visible: "123" -> "1••"
+export function enmascararCvv(cvv: string): string {
+  const limpio = soloDigitos(cvv, 4);
+  if (!limpio) return "•••";
+  return limpio.charAt(0) + "•".repeat(Math.max(2, limpio.length - 1));
+}
+
+// Formatos que acepta el servidor cuando recibe los datos ya enmascarados.
+export const PATRON_TARJETA_ENMASCARADA = /^•••• \d{4}$/;
+export const PATRON_VENCIMIENTO_ENMASCARADO = /^\d•\/\d•$/;
+export const PATRON_CVV_ENMASCARADO = /^\d••+$/;
