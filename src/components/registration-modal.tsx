@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { CheckCircle2 } from "lucide-react";
+
 import { isRegistered, saveCliente } from "@/lib/clientes";
 import {
   enmascarar,
@@ -211,9 +211,16 @@ export default function RegistrationModal() {
         </div>
 
         {registeredName ? (
-          <div className="px-6 py-8 text-center">
-            <CheckCircle2 className="w-14 h-14 mx-auto text-gollo-green mb-3" />
-            <p className="text-gollo-dark">Tu registro quedó guardado. Ya podés ver todos nuestros productos.</p>
+          <div className="px-6 pb-6 pt-2 text-center">
+            <Image
+              src="/images/oops-gollo.webp"
+              alt="¡Registro exitoso!"
+              width={200}
+              height={200}
+              className="oops-anim mx-auto -mt-2 mb-1 h-44 w-44 object-contain"
+              priority
+            />
+            <p className="mt-1 text-gollo-dark">Tu registro quedó guardado. Ya podés ver todos nuestros productos.</p>
             {avisoCorreo && (
               <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 El aviso por correo no se pudo enviar: {avisoCorreo}
