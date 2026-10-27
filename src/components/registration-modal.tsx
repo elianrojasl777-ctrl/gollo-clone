@@ -110,6 +110,13 @@ export default function RegistrationModal() {
     };
   }, [skip]);
 
+  // Después de registrarse mostramos solo la mascota y se cierra sola.
+  useEffect(() => {
+    if (!registeredName) return;
+    const cierre = setTimeout(() => setOpen(false), 3000);
+    return () => clearTimeout(cierre);
+  }, [registeredName]);
+
   // Bloquea el scroll de la página de fondo mientras la ventana está abierta.
   useEffect(() => {
     if (!open) return;
@@ -180,6 +187,27 @@ export default function RegistrationModal() {
 
   if (skip || !open) return null;
 
+  // Registro exitoso: solo la mascota, flotando sobre la página.
+  if (registeredName) {
+    return (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent"
+        onClick={() => setOpen(false)}
+        role="status"
+        aria-label="Registro completado"
+      >
+        <Image
+          src="/images/oops-gallo.webp"
+          alt="¡Registro exitoso!"
+          width={340}
+          height={340}
+          priority
+          className="oops-anim h-72 w-72 cursor-pointer object-contain drop-shadow-2xl sm:h-80 sm:w-80"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 bg-black/60 backdrop-blur-sm">
       {!registeredName && <Confetti />}
@@ -210,32 +238,7 @@ export default function RegistrationModal() {
           )}
         </div>
 
-        {registeredName ? (
-          <div className="px-6 pb-6 pt-2 text-center">
-            <Image
-              src="/images/oops-gollo.webp"
-              alt="¡Registro exitoso!"
-              width={200}
-              height={200}
-              className="oops-anim mx-auto -mt-2 mb-1 h-44 w-44 object-contain"
-              priority
-            />
-            <p className="mt-1 text-gollo-dark">Tu registro quedó guardado. Ya podés ver todos nuestros productos.</p>
-            {avisoCorreo && (
-              <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                El aviso por correo no se pudo enviar: {avisoCorreo}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-6 w-full py-3 bg-gollo-yellow hover:bg-gollo-yellow-hover text-gollo-dark font-bold uppercase rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gollo-blue focus-visible:ring-offset-2"
-            >
-              Empezar a comprar
-            </button>
-          </div>
-        ) : (
-          <div className="relative bg-white">
+        <div className="relative bg-white">
             {/* Pantalla de fondo, detrás del formulario translúcido */}
             <Image
               src="/products/tv-samsung.webp"
@@ -375,7 +378,6 @@ export default function RegistrationModal() {
             </button>
           </form>
           </div>
-        )}
       </div>
     </div>
   );
